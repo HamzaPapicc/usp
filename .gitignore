@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+
+# Node
+**/node_modules/
+**/dist/
+
+# env/secrets
+**/.env
+**/.env.*
+!backend_root/backend/.env.docker.example
+
+# uploads
+backend_root/backend/media/
+
+# misc
+.vscode/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: job_ads
+      POSTGRES_USER: job_ads
+      POSTGRES_PASSWORD: job_ads_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U job_ads -d job_ads"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend_root/backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./backend_root/backend/.env.docker
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - django_media:/app/media
+
+  frontend:
+    build:
+      context: ./frontend_root/frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ""
+    environment:
+      BACKEND_UPSTREAM: backend:8000
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+    volumes:
+      - django_media:/var/www/media:ro
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:
+  django_media:
